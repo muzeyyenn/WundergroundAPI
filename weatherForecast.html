@@ -1,0 +1,135 @@
+<html>
+ <head>
+ <meta charset='utf-8'>
+ <link href="http://code.jquery.com/ui/1.10.4/themes/sunny/jquery-ui.css" rel="stylesheet">
+ <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+ <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+ <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+ <center>
+   <input type="text" id="text" border: 1px><br>
+   <input type="button" id="btn" onClick="divFunction()" value="View Weather">
+ </center>
+
+  <style>
+     body {
+	  background: url(mainpage.jpg) no-repeat center center fixed;
+	  background-size: cover;
+	  -webkit-background-size: cover; }
+
+      #tabs{font-size: 14px;}
+         .ui-widget-header {
+            border: 1px solid #b9cd6d;
+            color: #FFFFFF;
+            font-weight: bold;
+         }
+
+  </style>
+
+
+ </head>
+<body>
+  <table>
+	<tr><td id="postresult"><td>
+	<td><img id="icon"/></td></tr>
+	<tr><td id="postresult1"><td>
+	<td id="postresult2"><td></tr>
+	<tr><td id="postresult3"><td>
+	<td id="postresult4"><td></tr>
+	<tr><td id="postresult5"><td>
+	<td id="postresult6"><td></tr>
+	<tr><td id="postresult7"><td>
+	<td id="postresult8"><td></tr>
+	<tr><td id="postresult9"><td>
+	<td id="postresult10"><td></tr>
+  </table>
+  <div id="tabs">
+   <ul>
+    <li><a href="#tab1">Hourly Forecast</a></li>
+    <li><a href="#tab2">10 Days Forecast</a></li>
+   </ul>
+
+   <div id="tab1"></div>
+   <div id="tab2"></div>
+
+  </div>
+
+
+ <script>
+   var tabs = $("#tabs");
+   tabs.hide();
+
+	function divFunction()
+	{
+		jQuery.noConflict();     
+		$(document).ready(function() {
+		     tabs.show();
+		     $("#tabs").tabs();
+		 });
+
+
+    $.ajax({
+        url : "http://api.wunderground.com/api/979cbf569365389d/geolookup/conditions/q/IA/"+ $("#text").val() +".json",
+        dataType : "jsonp",
+        success : function(parsed_json) {
+            var location = parsed_json['location']['city'];
+            var temp_c = parsed_json['current_observation']['temp_c'];
+            var state = parsed_json['location']['state'];
+	    var weather = parsed_json['current_observation']['weather'];
+	    var feelslike_string = parsed_json['current_observation']['feelslike_string'];
+            var observation_time = parsed_json['current_observation']['observation_time'];
+            var wind = parsed_json['current_observation']['wind_string'];
+            var icon = parsed_json['current_observation']['icon_url'];
+            var relative_humidity = parsed_json['current_observation']['relative_humidity'];
+            var state_name = parsed_json['current_observation']['display_location']['state_name'];
+            $("#postresult").text(location + " is in " + state_name);
+	    $("#postresult1").text("Temperature");
+	    $("#postresult2").text(temp_c);
+            $("#postresult3").text("Feelslike");
+	    $("#postresult4").text(feelslike_string);
+            $("#postresult5").text("Weather ");
+ 	    $("#postresult6").text(weather);
+            $("#postresult7").text("Wind");
+	    $("#postresult8").text(wind);
+            $("#postresult9").text("Humudity");
+	    $("#postresult10").text(relative_humidity);
+            $("#icon").attr("src", icon);
+           }
+      });
+    
+    $.getJSON("http://api.wunderground.com/api/979cbf569365389d/geolookup/hourly/q/IA/"+ $("#text").val() +".json",function(resp){
+	$('#tab1').empty();
+	    $.each(resp.hourly_forecast, function(){
+		logTime(this); 
+	    });
+	});
+	  function logTime( obj){
+	    var content2 = "<table>"
+		
+	    content2 = '<tr><td height=30 width=80>' + obj.FCTTIME.weekday_name + '</td><td height=30 width=80>' + '<img src="'+ obj.icon_url +'">' + '</td><td height=30 width=80>' + obj.FCTTIME.civil + '</td><td height=30 width=80>' +obj.condition +'</td><td height=30 width=80>' + obj.feelslike.metric +' C'+'</td><td height=30 width=80>'+ obj.temp.metric +' C'+'</td></tr>';
+           content2 += "</table>"
+	   $('#tab1').append(content2);
+         } 
+
+
+   $.ajax({
+	    url : "http://api.wunderground.com/api/979cbf569365389d/forecast10day/q/IA/"+ $("#text").val() +".json",
+	    dataType : "jsonp",
+            success : function(parsed) {
+		var v1 = parsed['forecast']['simpleforecast']['forecastday'];
+		$('#tab2').empty();
+		var content = "<table>"
+		var content1 = "<thead><tr><td><strong>weekday</strong></td><td><strong>icon_url</strong></td><td><strong>conditions</strong></td><td><strong>celsius</strong></td><td><strong>low</strong></td></tr></thead>";
+		for (index in v1) {
+		    content = '<tr><td height=30 width=80>' + v1[index]['date']['weekday'] + '</td><td height=30 width=80>' +'<img src="'+ v1[index]['icon_url'] +'"></td><td height=30 width=80>' + v1[index]['conditions']+ '</td><td height=30 width=80>' + v1[index]['high']['celsius']+ '</td><td height=30 width=80 >' +v1[index]['low']['celsius'] +'</td><tr>';
+		content += "</table>"
+		$('#tab2').append(content);
+				} 
+		$('#tab2').append(content1);
+			} 
+	}); 
+
+  }
+  </script>
+ </body>
+</html>
+
